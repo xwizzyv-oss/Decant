@@ -875,7 +875,7 @@
 
   <script src="https://sdk.mercadopago.com/js/v2"></script>
   <script>
-    const MP_PUBLIC_KEY = 'TU_PUBLIC_KEY_DE_MERCADO_PAGO';
+    const MP_PUBLIC_KEY = 'APP_USR-5614c2df-caaf-4114-9b4d-c4c48e38ded3';
     const products = [
       { id:'polo-67', name:'Polo 67 Ralph Lauren EDT', image:'https://www.fragrantica.com/images/perfume/375x500.90473.jpg', desc:'Una fragancia fresca y moderna. Apertura cítrica y aromática. Corazón limpio y elegante. Fondo suave y masculino.', meta:'Inspirado en estilo clásico americano moderno', notes:['Salida fresca cítrica','Corazón limpio','Fondo suave masculino','Clásico. Moderno. Versátil.'], identity:'Para quien busca elegancia limpia y masculina sin esfuerzo.', duration:'Media', projection:'Media', occasion:'Diario, oficina', season:'Primavera y verano', profile:'Perfecto para uso diario con estilo sobrio.', tags:['fresh','daily'], badges:['Diario'], sizes:{'3 ml':7000,'5 ml':10000,'10 ml':18000} },
       { id:'eros-flame', name:'Versace Eros Flame EDP', image:'https://www.fragrantica.com/images/perfume/375x500.52456.jpg', desc:'Una fragancia intensa y apasionada. Apertura cítrica con especias. Corazón cálido y elegante. Fondo profundo amaderado.', meta:'Perfil sensual masculino', notes:['Salida cítrica especiada','Corazón cálido','Fondo amaderado','Apasionado. Intenso. Masculino.'], identity:'Para quien quiere destacar con intensidad y carácter.', duration:'Alta', projection:'Alta', occasion:'Noche, citas', season:'Otoño e invierno', profile:'Ideal para momentos donde quieres llamar la atención.', tags:['night','sweet'], badges:['Nocturno'], sizes:{'3 ml':7000,'5 ml':10000,'10 ml':18000} },
@@ -1160,7 +1160,7 @@
 
     async function startMercadoPagoCheckout(items) {
       try {
-        if (!MP_PUBLIC_KEY || MP_PUBLIC_KEY === 'TU_PUBLIC_KEY_DE_MERCADO_PAGO') {
+        if (!MP_PUBLIC_KEY || MP_PUBLIC_KEY === 'APP_USR-5614c2df-caaf-4114-9b4d-c4c48e38ded3') {
           alert('Debes configurar tu Public Key de Mercado Pago en el código.');
           return;
         }
