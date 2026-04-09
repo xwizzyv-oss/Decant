@@ -1159,28 +1159,45 @@
       await startMercadoPagoCheckout(items);
     }
 
-    async function startMercadoPagoCheckout(items) {
-      try {
-        if (!MP_PUBLIC_KEY || MP_PUBLIC_KEY === 'APP_USR-5614c2df-caaf-4114-9b4d-c4c48e38ded3') {
-          alert('Debes configurar tu Public Key de Mercado Pago en el código.');
-          return;
-        }
-
-        const response = await fetch(`${BACKEND_URL}/create_preference`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items })
-        });
-
-        if (!response.ok) throw new Error('No se pudo crear la preferencia de pago.');
-
-        const data = await response.json();
-        const mp = new MercadoPago(MP_PUBLIC_KEY, { locale: 'es-CL' });
-        mp.checkout({ preference: { id: data.preferenceId }, autoOpen: true });
-      } catch (error) {
-        alert('Error al iniciar el pago: ' + error.message);
-      }
+   async function startMercadoPagoCheckout(items) {
+  try {
+    if (!MP_PUBLIC_KEY || MP_PUBLIC_KEY === 'PEGA_AQUI_TU_PUBLIC_KEY') {
+      alert('Debes configurar tu Public Key de Mercado Pago en el código.');
+      return;
     }
+
+    if (!BACKEND_URL || BACKEND_URL === 'PEGA_AQUI_LA_URL_DE_TU_BACKEND') {
+      alert('Debes configurar la URL de tu backend.');
+      return;
+    }
+
+    const response = await fetch(`${BACKEND_URL}/create_preference`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`No se pudo crear la preferencia de pago. ${errorText}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.preferenceId) {
+      throw new Error('El backend no devolvió un preferenceId válido.');
+    }
+
+    const mp = new MercadoPago(MP_PUBLIC_KEY, { locale: 'es-CL' });
+    mp.checkout({
+      preference: { id: data.preferenceId },
+      autoOpen: true
+    });
+  } catch (error) {
+    alert('Error al iniciar el pago: ' + error.message);
+    console.error(error);
+  }
+}
 
     window.addEventListener('scroll', () => {
       header.classList.toggle('scrolled', window.scrollY > 10);
