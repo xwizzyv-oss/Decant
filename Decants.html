@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DECANTS — Editorial Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f5f1;
+      --text: #111111;
+      --muted: #6f6f6f;
+      --line: #dfdbd3;
+      --panel: #ffffff;
+      --success: #153c2a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, select, input { font: inherit; }
+
+    .site-header {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 28px;
+      background: rgba(247, 245, 241, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid transparent;
+      transition: 0.3s ease;
+    }
+    .site-header.scrolled { border-color: var(--line); }
+    .brand { font-size: 1.65rem; font-weight: 600; letter-spacing: 0.28rem; }
+    .header-actions { display: flex; align-items: center; gap: 14px; }
+
+    .header-link,
+    .cart-trigger,
+    .menu-trigger,
+    .primary-btn,
+    .secondary-btn,
+    .ghost-btn,
+    .filter-btn,
+    .mini-btn {
+      border: 1px solid var(--text);
+      background: transparent;
+      color: var(--text);
+      padding: 12px 18px;
+      text-transform: uppercase;
+      letter-spacing: 0.12rem;
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .header-link:hover,
+    .cart-trigger:hover,
+    .menu-trigger:hover,
+    .primary-btn:hover,
+    .secondary-btn:hover,
+    .ghost-btn:hover,
+    .filter-btn:hover,
+    .mini-btn:hover,
+    .filter-btn.active {
+      background: var(--text);
+      color: #fff;
+    }
+
+    .menu-panel {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: min(420px, 100%);
+      background: rgba(255,255,255,0.98);
+      z-index: 1100;
+      padding: 110px 32px 32px;
+      transform: translateX(-100%);
+      transition: 0.35s ease;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .menu-panel.active { transform: translateX(0); }
+    .menu-panel nav { display: flex; flex-direction: column; gap: 18px; }
+    .menu-panel button {
+      font-size: clamp(1.15rem, 2vw, 1.8rem);
+      text-transform: uppercase;
+      letter-spacing: 0.1rem;
+      background: none;
+      border: none;
+      text-align: left;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .menu-close {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      width: 46px;
+      height: 46px;
+      border: 1px solid var(--text);
+      background: transparent;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .menu-footer { color: var(--muted); font-size: 0.82rem; line-height: 1.6; padding-top: 30px; }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.18);
+      z-index: 1050;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.3s ease;
+    }
+    .overlay.active { opacity: 1; pointer-events: all; }
+
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      padding-top: 84px;
+    }
+    .hero-copy {
+      padding: 9.5rem 4rem 4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .eyebrow {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.22rem;
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+    .hero-title {
+      font-size: clamp(3.2rem, 8vw, 7rem);
+      line-height: 0.94;
+      letter-spacing: -0.06em;
+      font-weight: 600;
+      max-width: 8ch;
+    }
+    .hero-text {
+      margin-top: 28px;
+      max-width: 540px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.8;
+    }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 34px; }
+    .hero-visual {
+      position: relative;
+      min-height: 560px;
+      background: url('https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+    }
+    .hero-note, .floating-card {
+      position: absolute;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(17,17,17,0.08);
+      backdrop-filter: blur(6px);
+    }
+    .hero-note {
+      left: 28px;
+      bottom: 28px;
+      padding: 14px 16px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12rem;
+    }
+    .floating-card { top: 28px; right: 28px; padding: 18px; width: 220px; }
+    .floating-card span {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12rem;
+      margin-bottom: 10px;
+    }
+    .floating-card strong { display: block; font-size: 1rem; line-height: 1.4; margin-bottom: 10px; }
+    .floating-card p { color: var(--muted); font-size: 0.84rem; line-height: 1.6; }
+
+    .section { padding: 42px 28px 80px; }
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      border-top: 1px solid var(--line);
+      padding-top: 20px;
+      margin-bottom: 28px;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 3vw, 3rem);
+      letter-spacing: -0.04em;
+      font-weight: 600;
+    }
+    .section-subtitle { max-width: 520px; color: var(--muted); line-height: 1.7; }
+
+    .featured-strip { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 18px; margin-bottom: 26px; }
+    .featured-main, .featured-side { background: #fff; border: 1px solid var(--line); }
+    .featured-main { display: grid; grid-template-columns: 1fr 1fr; min-height: 430px; overflow: hidden; }
+    .featured-main-image {
+      background: linear-gradient(rgba(255,255,255,0.04), rgba(255,255,255,0.04)), url('/mnt/data/image.png') center/cover no-repeat;
+      min-height: 100%;
+    }
+    .featured-main-copy { padding: 32px; display: flex; flex-direction: column; justify-content: space-between; }
+    .featured-main-copy h3 {
+      font-size: clamp(2rem, 4vw, 3.6rem);
+      line-height: 0.98;
+      letter-spacing: -0.05em;
+      max-width: 8ch;
+    }
+    .featured-main-copy p { color: var(--muted); line-height: 1.8; margin-top: 16px; max-width: 42ch; }
+    .featured-side { padding: 28px; display: grid; align-content: space-between; gap: 20px; }
+    .featured-side h4 { font-size: 1.45rem; letter-spacing: -0.03em; }
+    .featured-side p { color: var(--muted); line-height: 1.8; }
+    .featured-points { display: grid; gap: 10px; color: var(--muted); font-size: 0.9rem; }
+
+    .catalog-tools {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .filter-group, .search-group { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .filter-btn, .mini-btn { padding: 10px 14px; font-size: 0.68rem; }
+    .search-input {
+      min-width: 250px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 12px 14px;
+      outline: none;
+    }
+
+    .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .product-card {
+      cursor: pointer;
+      background: transparent;
+      transition: transform 0.28s ease;
+      position: relative;
+    }
+    .product-card:hover { transform: translateY(-4px); }
+    .product-media {
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      background: #ece8e0;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .product-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.45s ease;
+      display: block;
+    }
+    .product-card:hover .product-media img { transform: scale(1.04); }
+    .product-badges {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      z-index: 2;
+    }
+    .badge {
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(17,17,17,0.08);
+      padding: 7px 9px;
+      font-size: 0.62rem;
+      letter-spacing: 0.08rem;
+      text-transform: uppercase;
+    }
+    .product-name { font-size: 0.94rem; text-transform: uppercase; letter-spacing: 0.08rem; }
+    .product-desc, .product-price, .product-meta, .detail-copy p, .back-copy, .product-extra { color: var(--muted); }
+    .product-desc { margin-top: 8px; font-size: 0.88rem; line-height: 1.6; min-height: 42px; }
+    .product-extra {
+      margin-top: 10px;
+      font-size: 0.77rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .product-price { margin-top: 10px; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08rem; }
+
+    .editorial-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 18px; margin-top: 12px; }
+    .editorial-image {
+      min-height: 700px;
+      background: url('https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+    }
+    .editorial-copy {
+      background: #fff;
+      border: 1px solid var(--line);
+      padding: 42px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .editorial-copy h3 {
+      font-size: clamp(2rem, 4vw, 4rem);
+      letter-spacing: -0.05em;
+      line-height: 0.98;
+      max-width: 9ch;
+    }
+    .editorial-copy p { margin-top: 18px; max-width: 36ch; line-height: 1.9; color: var(--muted); }
+
+    .benefits, .trust-grid, .season-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    .benefit-card, .trust-card, .season-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      padding: 26px;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .benefit-card span, .trust-card span, .season-card span {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14rem;
+      color: var(--muted);
+    }
+    .benefit-card h4, .trust-card h4, .season-card h4 {
+      font-size: 1.25rem;
+      letter-spacing: -0.03em;
+      margin-top: 20px;
+    }
+    .benefit-card p, .trust-card p, .season-card p { color: var(--muted); line-height: 1.7; margin-top: 12px; }
+
+    .site-footer {
+      padding: 28px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      text-transform: uppercase;
+      letter-spacing: 0.1rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .cart-panel {
+      position: fixed;
+      inset: 0 0 0 auto;
+      width: min(420px, 100%);
+      background: rgba(255,255,255,0.98);
+      z-index: 1200;
+      border-left: 1px solid var(--line);
+      padding: 24px 24px 28px;
+      transform: translateX(100%);
+      transition: 0.35s ease;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 20px;
+    }
+    .cart-panel.active { transform: translateX(0); }
+    .cart-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .cart-title { text-transform: uppercase; letter-spacing: 0.12rem; font-size: 0.84rem; }
+    .cart-close {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--text);
+      background: transparent;
+      cursor: pointer;
+    }
+    .cart-items {
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding-right: 4px;
+    }
+    .cart-empty { color: var(--muted); line-height: 1.8; padding-top: 8px; }
+    .cart-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .cart-item strong {
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 0.08rem;
+      font-size: 0.86rem;
+      margin-bottom: 8px;
+    }
+    .cart-meta { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+    .cart-remove {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.08rem;
+      font-size: 0.72rem;
+      align-self: start;
+    }
+    .cart-bottom { border-top: 1px solid var(--line); padding-top: 18px; display: grid; gap: 12px; }
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      text-transform: uppercase;
+      letter-spacing: 0.08rem;
+      font-size: 0.85rem;
+    }
+
+    .detail-view { min-height: 100vh; padding-top: 88px; display: none; }
+    .detail-view.active { display: block; }
+    .detail-layout { display: grid; grid-template-columns: 0.95fr 1.05fr; min-height: calc(100vh - 88px); }
+    .detail-media {
+      background: #ebe8e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 42px;
+      position: relative;
+    }
+    .detail-media img {
+      width: min(560px, 100%);
+      max-height: 78vh;
+      object-fit: cover;
+      display: block;
+    }
+    .detail-badges {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .detail-copy {
+      background: #fff;
+      padding: 48px 42px 34px;
+      border-left: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 28px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.1rem;
+      font-size: 0.74rem;
+      width: fit-content;
+      color: var(--text);
+    }
+    .detail-title {
+      font-size: clamp(2.2rem, 4vw, 4.4rem);
+      line-height: 0.98;
+      letter-spacing: -0.05em;
+      max-width: 10ch;
+      font-weight: 600;
+    }
+    .detail-meta {
+      margin-top: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.1rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .detail-copy p { margin-top: 22px; line-height: 1.9; max-width: 56ch; }
+    .detail-list, .detail-identity, .detail-profile {
+      margin-top: 24px;
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.7;
+    }
+    .detail-info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 24px; }
+    .info-box { border: 1px solid var(--line); background: var(--panel); padding: 16px; }
+    .info-box strong {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12rem;
+      margin-bottom: 8px;
+    }
+    .info-box span { display: block; font-size: 0.96rem; line-height: 1.6; }
+    .buy-box {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 14px;
+      max-width: 420px;
+    }
+    .field-label {
+      text-transform: uppercase;
+      letter-spacing: 0.1rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .field, .qty-field {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 14px 16px;
+    }
+    .detail-actions { display: grid; gap: 10px; margin-top: 8px; }
+    .primary-btn { background: var(--text); color: #fff; }
+    .primary-btn:hover { background: #2b2b2b; color: #fff; }
+    .secondary-btn { border-color: #111111; color: #111111; }
+    .secondary-btn:hover { background: #111111; color: #fff; }
+    .note { margin-top: 10px; font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+    .stock-note {
+      color: var(--success);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1rem;
+      margin-top: 4px;
+    }
+    .hidden { display: none !important; }
+
+    @media (max-width: 1100px) {
+      .hero, .detail-layout, .editorial-grid, .featured-strip, .featured-main { grid-template-columns: 1fr; }
+      .product-grid, .benefits, .trust-grid, .season-grid { grid-template-columns: repeat(2, 1fr); }
+      .hero-copy { padding: 8rem 2rem 3rem; }
+      .hero-visual { min-height: 65vh; }
+      .detail-copy { border-left: none; border-top: 1px solid var(--line); }
+    }
+
+    @media (max-width: 720px) {
+      .site-header { padding: 16px 18px; }
+      .brand { font-size: 1.2rem; letter-spacing: 0.16rem; }
+      .hero-copy, .section, .detail-copy, .detail-media, .editorial-copy, .featured-main-copy, .featured-side {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+      .product-grid, .benefits, .trust-grid, .season-grid, .detail-info-grid { grid-template-columns: 1fr; }
+      .hero-title { max-width: 10ch; }
+      .header-link, .floating-card { display: none; }
+      .catalog-tools { flex-direction: column; align-items: stretch; }
+      .search-input { min-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay" id="overlay" onclick="closePanels()"></div>
+
+  <aside class="menu-panel" id="menuPanel">
+    <button class="menu-close" onclick="toggleMenu(false)">✕</button>
+    <nav>
+      <button onclick="showCatalog()">Catálogo</button>
+      <button onclick="goHomeAndScroll('editorial')">Editorial</button>
+      <button onclick="goHomeAndScroll('compra-directa')">Compra directa</button>
+      <button onclick="goHomeAndScroll('confianza')">Confianza</button>
+      <button onclick="goHomeAndScroll('servicio')">Servicio</button>
+      <button onclick="toggleCart(true)">Carrito</button>
+    </nav>
+    <div class="menu-footer">
+      Decants de perfumes árabes y de diseñador con una presentación limpia, moderna y enfocada en experiencia de compra.
+    </div>
+  </aside>
+
+  <aside class="cart-panel" id="cartPanel">
+    <div class="cart-top">
+      <div class="cart-title">Carrito</div>
+      <button class="cart-close" onclick="toggleCart(false)">✕</button>
+    </div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-bottom">
+      <div class="cart-total">
+        <span>Total</span>
+        <strong id="cartTotal">$0</strong>
+      </div>
+      <button class="primary-btn" onclick="openCheckout()">Finalizar compra</button>
+      <button class="ghost-btn" onclick="clearCart()">Vaciar carrito</button>
+    </div>
+  </aside>
+
+  <header class="site-header" id="siteHeader">
+    <div class="header-actions">
+      <button class="menu-trigger" onclick="toggleMenu(true)">Menú</button>
+    </div>
+    <a href="#" class="brand" onclick="goHome(); return false;">DECANTS</a>
+    <div class="header-actions">
+      <a class="header-link" href="#catalogo" onclick="showCatalog(); return false;">Catálogo</a>
+      <button class="cart-trigger" onclick="toggleCart(true)">Carrito</button>
+    </div>
+  </header>
+
+  <main id="homeView">
+    <section class="hero" id="heroSection">
+      <div class="hero-copy">
+        <div class="eyebrow">Perfumes árabes · edición curada</div>
+        <h1 class="hero-title">Una tienda de fragancias con estética editorial.</h1>
+        <p class="hero-text">
+          Descubre decants premium con una presentación limpia, aspiracional y moderna. Elige perfumes en tendencia, encuentra el perfil que más va contigo y compra con tarjeta mediante Mercado Pago.
+        </p>
+        <div class="hero-actions">
+          <button class="primary-btn" onclick="showCatalog()">Explorar</button>
+          <button class="ghost-btn" onclick="goHomeAndScroll('editorial')">Ver colección</button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="floating-card">
+          <span>Selección recomendada</span>
+          <strong>French Avenue Liquid Brun EDP</strong>
+          <p>Un gourmand cálido, elegante y adictivo para quienes quieren dejar una firma personal.</p>
+        </div>
+        <div class="hero-note">Selección 2026 · árabes en tendencia</div>
+      </div>
+    </section>
+
+    <section class="section hidden" id="catalogo" style="min-height:100vh;background:#fff;">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Catálogo</h2>
+        </div>
+        <p class="section-subtitle">
+          Una selección visualmente limpia, inspirada en el lenguaje editorial de moda: imágenes grandes, aire, tipografía sobria y foco total en el producto.
+        </p>
+      </div>
+
+      <div class="featured-strip">
+        <article class="featured-main">
+          <div class="featured-main-image"></div>
+          <div class="featured-main-copy">
+            <div>
+              <div class="eyebrow">Destacado de la semana</div>
+              <h3>Liquid Brun, una firma cálida y contundente.</h3>
+              <p>
+                Si buscas una fragancia con presencia, dulzor elegante y una vibra sofisticada para destacar de noche, esta es la recomendación principal de la tienda.
+              </p>
+            </div>
+            <div class="hero-actions">
+              <button class="primary-btn" onclick="openProduct('liquid-brun')">Ver perfume</button>
+              <button class="ghost-btn" onclick="setFilter('best-seller')">Ver más vendidos</button>
+            </div>
+          </div>
+        </article>
+
+        <aside class="featured-side">
+          <div>
+            <div class="eyebrow">Encuentra tu aroma</div>
+            <h4>Explora por estilo, ocasión y personalidad.</h4>
+            <p>Filtra el catálogo para descubrir perfumes dulces, frescos, nocturnos o versátiles según lo que quieras proyectar.</p>
+          </div>
+          <div class="featured-points">
+            <div>— Dulces y gourmand para destacar</div>
+            <div>— Frescos y limpios para diario</div>
+            <div>— Nocturnos con mayor presencia</div>
+            <div>— Opciones versátiles para todo momento</div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="catalog-tools">
+        <div class="filter-group" id="filterGroup">
+          <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">Todos</button>
+          <button class="filter-btn" data-filter="sweet" onclick="setFilter('sweet')">Dulces</button>
+          <button class="filter-btn" data-filter="fresh" onclick="setFilter('fresh')">Frescos</button>
+          <button class="filter-btn" data-filter="night" onclick="setFilter('night')">Nocturnos</button>
+          <button class="filter-btn" data-filter="daily" onclick="setFilter('daily')">Diario</button>
+          <button class="filter-btn" data-filter="best-seller" onclick="setFilter('best-seller')">Más vendidos</button>
+        </div>
+        <div class="search-group">
+          <input id="searchInput" class="search-input" type="text" placeholder="Buscar perfume..." oninput="handleSearch(this.value)">
+          <button class="mini-btn" onclick="resetCatalogTools()">Limpiar</button>
+        </div>
+      </div>
+
+      <div class="product-grid" id="productGrid"></div>
+    </section>
+
+    <section class="section" id="editorial">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Editorial</h2>
+        </div>
+        <p class="section-subtitle">
+          Perfumes con presencia, carácter y una identidad visual que transmite lujo silencioso.
+        </p>
+      </div>
+
+      <div class="editorial-grid">
+        <div class="editorial-image"></div>
+        <div class="editorial-copy">
+          <div>
+            <div class="eyebrow">Nueva selección</div>
+            <h3>Fragancias que se sienten como una firma personal.</h3>
+            <p>
+              Cada decant está pensado para acercar perfumes virales y de alta demanda a una experiencia de compra más elegante, directa y contemporánea.
+            </p>
+          </div>
+          <button class="ghost-btn" onclick="showCatalog()">Descubrir ahora</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="temporadas">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Cómo elegir</h2>
+        </div>
+        <p class="section-subtitle">
+          Una guía rápida para conectar mejor con el perfume según el momento, la energía y la ocasión.
+        </p>
+      </div>
+      <div class="season-grid">
+        <article class="season-card"><span>01</span><div><h4>Para diario</h4><p>Busca frescura, limpieza y versatilidad. Perfumes como Fakhar funcionan bien en oficina, universidad y uso cotidiano.</p></div></article>
+        <article class="season-card"><span>02</span><div><h4>Para la noche</h4><p>Prefiere perfumes intensos, dulces o envolventes. Liquid Brun, 9 PM o Khamrah crean una presencia más marcada.</p></div></article>
+        <article class="season-card"><span>03</span><div><h4>Para destacar</h4><p>Si quieres proyectar algo memorable, elige perfiles gourmand, ambarados o frutales con gran estela y carácter.</p></div></article>
+      </div>
+    </section>
+
+    <section class="section" id="compra-directa">
+      <div class="section-head">
+        <div><h2 class="section-title">Compra directa</h2></div>
+        <p class="section-subtitle">Un espacio pensado para quienes ya saben lo que quieren: elige tu formato, define la cantidad y paga de forma inmediata.</p>
+      </div>
+
+      <div class="benefits">
+        <article class="benefit-card"><span>01</span><div><h4>Elige tu formato</h4><p>Selecciona entre 3 ml, 5 ml o 10 ml según la experiencia que estés buscando.</p></div></article>
+        <article class="benefit-card"><span>02</span><div><h4>Agrega al carrito</h4><p>Explora cada perfume, revisa sus notas y agrega tus favoritos en segundos.</p></div></article>
+        <article class="benefit-card"><span>03</span><div><h4>Paga con tarjeta</h4><p>Finaliza el pedido con Mercado Pago y ofrece una experiencia de compra más directa y profesional.</p></div></article>
+      </div>
+
+      <div style="margin-top:28px;background:#fff;border:1px solid var(--line);padding:38px;display:grid;grid-template-columns:1.1fr 0.9fr;gap:24px;align-items:center;">
+        <div>
+          <div class="eyebrow">Pedido inmediato</div>
+          <h3 style="font-size:clamp(1.8rem,3vw,3rem);letter-spacing:-0.04em;line-height:1.05;max-width:12ch;">Haz tu compra directa de forma rápida, simple y elegante.</h3>
+          <p style="margin-top:18px;color:var(--muted);line-height:1.9;max-width:55ch;">Si ya encontraste tu fragancia ideal, solo entra al catálogo, selecciona el perfume que te interesa y finaliza tu pedido desde el carrito. Todo está diseñado para que la experiencia sea clara, cómoda y directa.</p>
+        </div>
+        <div style="display:grid;gap:12px;justify-items:start;">
+          <button class="primary-btn" onclick="showCatalog()">Ir al catálogo</button>
+          <button class="ghost-btn" onclick="toggleCart(true)">Ver carrito</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="confianza">
+      <div class="section-head">
+        <div><h2 class="section-title">Compra con confianza</h2></div>
+        <p class="section-subtitle">Reforzamos la experiencia con señales claras de confianza para que comprar se sienta más seguro y profesional.</p>
+      </div>
+      <div class="trust-grid">
+        <article class="trust-card"><span>01</span><div><h4>Decants preparados con cuidado</h4><p>Cada formato está pensado para mantener una presentación limpia y una experiencia coherente con la fragancia original.</p></div></article>
+        <article class="trust-card"><span>02</span><div><h4>Pago seguro</h4><p>La tienda está preparada para cerrar compras con tarjeta mediante Mercado Pago, entregando un flujo más confiable.</p></div></article>
+        <article class="trust-card"><span>03</span><div><h4>Selección curada</h4><p>No es un catálogo masivo. Es una colección de perfumes elegidos por tendencia, versatilidad y deseo real del cliente.</p></div></article>
+      </div>
+    </section>
+
+    <section class="section" id="servicio">
+      <div class="section-head">
+        <div><h2 class="section-title">Servicio</h2></div>
+        <p class="section-subtitle">Compra simple, atención directa y formatos ideales para probar antes de invertir en botella completa.</p>
+      </div>
+      <div class="benefits">
+        <article class="benefit-card"><span>01</span><div><h4>Decants curados</h4><p>Una selección enfocada en perfumes árabes y referencias que hoy concentran mayor interés.</p></div></article>
+        <article class="benefit-card"><span>02</span><div><h4>Compra segura</h4><p>Desde la tienda al pago con tarjeta mediante Mercado Pago, con total visible y flujo más profesional.</p></div></article>
+        <article class="benefit-card"><span>03</span><div><h4>Formatos 3, 5 y 10 ml</h4><p>Prueba, compara y encuentra tu esencia sin comprar una botella completa desde el inicio.</p></div></article>
+      </div>
+    </section>
+
+    <section class="section" id="guia-ml">
+      <div style="max-width:1100px;margin:0 auto;border-top:1px solid var(--line);padding-top:40px;">
+        <div style="background:#ffffff;border:1px solid var(--line);padding:50px 40px;">
+          <div style="display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:28px;">
+            <div>
+              <div class="eyebrow">Guía de compra</div>
+              <h2 style="font-size:clamp(2rem,4vw,3.5rem);letter-spacing:-0.04em;line-height:1.08;max-width:12ch;">¿No sabes cuántos ml comprar?</h2>
+            </div>
+            <button class="primary-btn" onclick="toggleMlGuide()">Ver recomendación</button>
+          </div>
+          <p style="max-width:760px;color:var(--muted);line-height:1.9;font-size:1rem;">Elegir el tamaño correcto depende de cuánto tiempo lo vas a usar, cuántas veces te aplicas perfume al día y si quieres probar una fragancia o convertirla en tu aroma de rutina.</p>
+          <div id="mlGuideContent" class="hidden" style="margin-top:30px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;">
+            <article class="benefit-card" style="min-height:220px;"><span>3 ml</span><div><h4>Para probar o viajar pocos días</h4><p>Si quieres conocer una fragancia nueva o vas de viaje por unos días, este formato es ideal. Aproximadamente rinde entre 30 y 50 sprays, lo que equivale a 1 o 2 semanas de uso moderado.</p></div></article>
+            <article class="benefit-card" style="min-height:220px;"><span>5 ml</span><div><h4>Para vacaciones o uso más constante</h4><p>Si sales de vacaciones durante 2 a 4 semanas, o quieres usar un perfume varias veces antes de decidirte, te recomendamos 5 ml. Rinde unas 70 a 75 aplicaciones aproximadamente.</p></div></article>
+            <article class="benefit-card" style="min-height:220px;"><span>10 ml</span><div><h4>Para uso diario real</h4><p>Si ya sabes que te encanta una fragancia y quieres incorporarla a tu rutina, 10 ml es la opción más conveniente. Rinde entre 140 y 190 sprays, con una duración aproximada de 1 a 2 meses de uso diario.</p></div></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="brandBanner" style="padding-top:60px;">
+      <div style="max-width:1100px;margin:0 auto;border-top:1px solid var(--line);padding-top:40px;">
+        <div style="background:#ffffff;border:1px solid var(--line);padding:50px 40px;text-align:center;">
+          <div class="eyebrow">Nuestra esencia</div>
+          <h2 style="font-size:clamp(2rem,4vw,3.5rem);letter-spacing:-0.04em;line-height:1.1;margin-bottom:20px;">Más que perfumes, una experiencia para descubrir tu identidad.</h2>
+          <p style="max-width:700px;margin:0 auto;color:var(--muted);line-height:1.9;font-size:1rem;">Somos una empresa dedicada a la venta de decants cuidadosamente seleccionados, pensados para acercarte al mundo de la perfumería de forma accesible, elegante y sin compromisos. Creemos que cada aroma cuenta una historia y que encontrar el correcto no debería ser un lujo inalcanzable, sino una experiencia personal, simple y auténtica.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <section class="detail-view" id="detailView">
+    <div class="detail-layout">
+      <div class="detail-media">
+        <div class="detail-badges" id="detailBadges"></div>
+        <img id="detailImage" src="" alt="Perfume" />
+      </div>
+      <div class="detail-copy">
+        <button class="back-btn" onclick="goHomeFromDetail()">← <span class="back-copy">Volver a la tienda</span></button>
+        <h1 class="detail-title" id="detailName"></h1>
+        <div class="detail-meta" id="detailMeta"></div>
+        <div class="stock-note" id="detailStockNote"></div>
+        <p id="detailDescription"></p>
+        <div class="detail-list" id="detailNotes"></div>
+        <div class="detail-identity" id="detailIdentity"></div>
+
+        <div class="detail-info-grid">
+          <div class="info-box"><strong>Duración</strong><span id="detailDuration"></span></div>
+          <div class="info-box"><strong>Proyección</strong><span id="detailProjection"></span></div>
+          <div class="info-box"><strong>Ocasión ideal</strong><span id="detailOccasion"></span></div>
+          <div class="info-box"><strong>Temporada</strong><span id="detailSeason"></span></div>
+        </div>
+
+        <div class="detail-profile" id="detailProfile"></div>
+
+        <div class="buy-box">
+          <label class="field-label" for="detailSize">Tamaño</label>
+          <select class="field" id="detailSize"></select>
+
+          <label class="field-label" for="detailQty">Cantidad</label>
+          <input class="qty-field" id="detailQty" type="number" min="1" value="1" />
+
+          <div class="detail-actions">
+            <button class="primary-btn" onclick="addCurrentDetailToCart()">Agregar al carrito</button>
+            <button class="secondary-btn" onclick="buyCurrentDetailNow()">Comprar ahora</button>
+          </div>
+          <div class="note">Pago con tarjeta vía Mercado Pago. Tu carrito permanece guardado aunque recargues la página.</div>
+          <div class="note">Rendimiento aproximado:<br>• 3 ml: 30–50 sprays (1–2 semanas)<br>• 5 ml: 70–75 sprays (3–4 semanas)<br>• 10 ml: 140–190 sprays (1–2 meses con uso diario)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <span>Decants premium</span>
+    <span>Chile</span>
+    <span>Pago seguro con Mercado Pago</span>
+  </footer>
+
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+  <script>
+    const MP_PUBLIC_KEY = 'TU_PUBLIC_KEY_DE_MERCADO_PAGO';
+    const products = [
+      { id:'polo-67', name:'Polo 67 Ralph Lauren EDT', image:'https://www.fragrantica.com/images/perfume/375x500.90473.jpg', desc:'Una fragancia fresca y moderna. Apertura cítrica y aromática. Corazón limpio y elegante. Fondo suave y masculino.', meta:'Inspirado en estilo clásico americano moderno', notes:['Salida fresca cítrica','Corazón limpio','Fondo suave masculino','Clásico. Moderno. Versátil.'], identity:'Para quien busca elegancia limpia y masculina sin esfuerzo.', duration:'Media', projection:'Media', occasion:'Diario, oficina', season:'Primavera y verano', profile:'Perfecto para uso diario con estilo sobrio.', tags:['fresh','daily'], badges:['Diario'], sizes:{'3 ml':7000,'5 ml':10000,'10 ml':18000} },
+      { id:'eros-flame', name:'Versace Eros Flame EDP', image:'https://www.fragrantica.com/images/perfume/375x500.52456.jpg', desc:'Una fragancia intensa y apasionada. Apertura cítrica con especias. Corazón cálido y elegante. Fondo profundo amaderado.', meta:'Perfil sensual masculino', notes:['Salida cítrica especiada','Corazón cálido','Fondo amaderado','Apasionado. Intenso. Masculino.'], identity:'Para quien quiere destacar con intensidad y carácter.', duration:'Alta', projection:'Alta', occasion:'Noche, citas', season:'Otoño e invierno', profile:'Ideal para momentos donde quieres llamar la atención.', tags:['night','sweet'], badges:['Nocturno'], sizes:{'3 ml':7000,'5 ml':10000,'10 ml':18000} },
+      { id:'light-blue', name:'Dolce & Gabbana Light Blue EDT', image:'https://www.fragrantica.com/images/perfume/375x500.1068.jpg', desc:'Una fragancia fresca y veraniega. Apertura cítrica brillante. Corazón limpio. Fondo suave y refrescante.', meta:'Clásico verano', notes:['Salida cítrica fresca','Corazón limpio','Fondo ligero','Fresco. Ligero. Veraniego.'], identity:'Para quien quiere oler limpio y fresco todo el día.', duration:'Media', projection:'Media', occasion:'Diario, verano', season:'Primavera y verano', profile:'Perfecto para climas cálidos.', tags:['fresh','daily'], badges:['Verano'], sizes:{'3 ml':6500,'5 ml':9500,'10 ml':17000} },
+      { id:'lacoste-blanc', name:'Lacoste Blanc Eau Intense EDT', image:'https://www.fragrantica.com/images/perfume/375x500.70873.jpg', desc:'Una fragancia limpia y deportiva. Apertura fresca. Corazón elegante. Fondo suave.', meta:'Perfil limpio moderno', notes:['Salida fresca','Corazón limpio','Fondo suave','Limpio. Deportivo. Moderno.'], identity:'Para quien busca un aroma limpio y confiable.', duration:'Media', projection:'Media', occasion:'Diario', season:'Todo el año', profile:'Muy versátil y fácil de usar.', tags:['fresh','daily'], badges:['Versátil'], sizes:{'3 ml':6500,'5 ml':9500,'10 ml':17000} },
+      { id:'bharara-king', name:'Bharara King EDP', image:'https://www.fragrantica.com/images/perfume/375x500.71912.jpg', desc:'Una fragancia dulce y potente. Apertura frutal intensa. Corazón dulce. Fondo amaderado.', meta:'Perfil dulce potente', notes:['Salida frutal','Corazón dulce','Fondo amaderado','Dulce. Potente. Llamativo.'], identity:'Para quien quiere ser el centro de atención.', duration:'Alta', projection:'Alta', occasion:'Noche', season:'Otoño e invierno', profile:'Muy llamativo y moderno.', tags:['sweet','night'], badges:['Potente'], sizes:{'3 ml':7000,'5 ml':10000,'10 ml':18000} },
+      { id:'amber-oud-gold-edition', name:'Al Haramain Amber Oud Gold Edition EDP', image:'https://www.fragrantica.com/images/perfume/375x500.67694.jpg', desc:'Fragancia dulce y frutal muy llamativa. Apertura intensa. Corazón dulce. Fondo cálido.', meta:'Perfil tipo Erba Pura', notes:['Frutal intenso','Dulce','Fondo cálido','Brillante. Dulce. Atractivo.'], identity:'Para quien quiere destacar con aroma moderno.', duration:'Alta', projection:'Alta', occasion:'Salida, evento', season:'Primavera y verano', profile:'Muy popular y atractivo.', tags:['sweet','best-seller'], badges:['Popular'], sizes:{'3 ml':7500,'5 ml':10500,'10 ml':19000} },
+      { id:'asad-bourbon', name:'Lattafa Asad Bourbon EDP', image:'https://www.fragrantica.com/images/perfume/375x500.83104.jpg', desc:'Fragancia intensa con carácter especiado. Apertura potente. Corazón cálido. Fondo profundo.', meta:'Perfil fuerte masculino', notes:['Especiado intenso','Cálido','Fondo profundo','Intenso. Fuerte. Masculino.'], identity:'Para quien busca presencia fuerte y segura.', duration:'Alta', projection:'Alta', occasion:'Noche', season:'Otoño e invierno', profile:'Muy potente y dominante.', tags:['night','sweet'], badges:['Intenso'], sizes:{'3 ml':6000,'5 ml':9000,'10 ml':16000} },
+      { id:'liquid-brun', name:'French Avenue Liquid Brun EDP', image:'/mnt/data/image.png', desc:'Una fragancia cálida y envolvente. Apertura especiada de canela y cardamomo. Corazón dulce de vainilla y ámbar. Fondo profundo de maderas y almizcle.', meta:'Inspirado en Parfums de Marly Althaïr', notes:['Apertura especiada de canela y cardamomo','Corazón dulce de vainilla y ámbar','Fondo profundo de maderas y almizcle','Adictivo. Elegante. Contundente.'], identity:'Para quien quiere proyectar elegancia cálida, seguridad y una presencia sofisticada que se recuerda.', duration:'Alta', projection:'Media / alta', occasion:'Noche, citas, eventos', season:'Otoño e invierno', profile:'Ideal si te gustan los perfumes dulces, modernos y con vibra de lujo discreto.', tags:['sweet','night','best-seller'], badges:['Best seller','Nocturno'], sizes:{'3 ml':6500,'5 ml':9500,'10 ml':17000} },
+      { id:'khamrah', name:'Lattafa Khamrah EDP', image:'https://www.fragrantica.com/images/perfume/375x500.73924.jpg', desc:'Una fragancia dulce y envolvente. Apertura especiada de canela y nuez moscada. Corazón gourmand de praline y dátiles. Fondo cálido de vainilla, ámbar y maderas.', meta:'Inspirado en Kilian Angels Share', notes:['Apertura especiada intensa','Corazón dulce tipo licor','Fondo cálido y persistente','Cálido. Gourmand. Magnético.'], identity:'Perfecto para quienes disfrutan fragancias golosas, intensas y con mucha personalidad.', duration:'Alta', projection:'Alta', occasion:'Noche, clima frío', season:'Otoño e invierno', profile:'Una gran opción si quieres algo llamativo, envolvente y fácil de recordar.', tags:['sweet','night','best-seller'], badges:['Top árabe','Gourmand'], sizes:{'3 ml':5000,'5 ml':8000,'10 ml':14000} },
+      { id:'cdn-intense', name:'Club de Nuit Intense EDP', image:'https://www.fragrantica.com/images/perfume/375x500.12217.jpg', desc:'Una fragancia intensa y elegante. Apertura cítrica de limón y piña. Corazón ahumado de abedul y jazmín. Fondo profundo de almizcle, ámbar gris y pachulí.', meta:'Inspirado en Creed Aventus', notes:['Apertura fresca y potente','Corazón ahumado distintivo','Fondo masculino y duradero','Clásico. Potente. Dominante.'], identity:'Para quien quiere una fragancia masculina, segura y de presencia inmediata.', duration:'Alta', projection:'Alta', occasion:'Diario, oficina, salida', season:'Todo el año', profile:'Muy recomendable si quieres versatilidad con carácter y una vibra más seria.', tags:['fresh','daily','best-seller'], badges:['Versátil','Más vendido'], sizes:{'3 ml':6000,'5 ml':9000,'10 ml':16000} },
+      { id:'amber-oud-gold', name:'Amber Oud Gold EDP', image:'https://www.fragrantica.com/images/perfume/375x500.67694.jpg', desc:'Una fragancia dulce y luminosa. Apertura frutal de melón y piña. Corazón suave de notas dulces y florales. Fondo cálido de vainilla y almizcle.', meta:'Inspirado en Xerjoff Erba Pura', notes:['Apertura frutal explosiva','Corazón dulce y limpio','Fondo suave y duradero','Brillante. Dulce. Atractivo.'], identity:'Ideal para quienes buscan algo más luminoso, llamativo y con un perfil muy atractivo.', duration:'Alta', projection:'Alta', occasion:'Salida, eventos, clima templado', season:'Primavera y verano', profile:'Una fragancia muy buena si quieres destacar con algo dulce, limpio y moderno.', tags:['sweet','best-seller'], badges:['Brillante','Popular'], sizes:{'3 ml':7000,'5 ml':10000,'10 ml':18000} },
+      { id:'qahwa', name:'Khamrah Qahwa EDP', image:'https://www.fragrantica.com/images/perfume/375x500.76201.jpg', desc:'Una fragancia cálida y gourmand. Apertura especiada con toque de café. Corazón dulce con vainilla y especias. Fondo profundo de maderas y ámbar.', meta:'Inspirado en perfumes gourmand modernos', notes:['Acorde de café tostado','Corazón dulce y envolvente','Fondo cálido intenso','Gourmand. Intenso. Moderno.'], identity:'Pensado para personas que buscan un perfume acogedor, moderno y con sensación adictiva.', duration:'Alta', projection:'Media / alta', occasion:'Noche, salidas, clima frío', season:'Otoño e invierno', profile:'Muy buena elección si te gusta el dulzor con toque tostado y una vibra más actual.', tags:['sweet','night'], badges:['Café','Gourmand'], sizes:{'3 ml':6000,'5 ml':9000,'10 ml':16000} },
+      { id:'9pm-night-out', name:'9 PM Night Out EDP', image:'https://www.fragrantica.com/images/perfume/375x500.67933.jpg', desc:'Una fragancia dulce y seductora. Apertura fresca de manzana y canela. Corazón envolvente de lavanda y flor de azahar. Fondo cálido de vainilla, haba tonka y ámbar.', meta:'Inspirado en Jean Paul Gaultier Ultra Male', notes:['Apertura fresca de manzana y canela','Corazón envolvente de lavanda y flor de azahar','Fondo cálido de vainilla, haba tonka y ámbar','Nocturno. Intenso. Irresistible.'], identity:'Hecho para quien quiere un perfume juvenil, seguro y con energía de noche.', duration:'Alta', projection:'Alta', occasion:'Fiesta, noche, salida', season:'Otoño e invierno', profile:'Si quieres algo divertido, seductor y fácil de notar, este es uno de los más fuertes.', tags:['sweet','night','best-seller'], badges:['Nocturno','Juvenil'], sizes:{'3 ml':5500,'5 ml':8500,'10 ml':15000} },
+      { id:'lattafa-fakhar', name:'Lattafa Fakhar EDP', image:'https://www.fragrantica.com/images/perfume/375x500.70765.jpg', desc:'Una fragancia limpia y contemporánea. Apertura fresca de manzana, jengibre y bergamota. Corazón aromático de lavanda y salvia. Fondo cálido de haba tonka, cedro y ámbar.', meta:'Inspirado en Yves Saint Laurent Y EDP', notes:['Apertura fresca de manzana, jengibre y bergamota','Corazón aromático de lavanda y salvia','Fondo cálido de haba tonka, cedro y ámbar','Moderno. Versátil. Esencial.'], identity:'Para quien busca limpieza, frescura y una imagen actual sin complicarse.', duration:'Media / alta', projection:'Media', occasion:'Diario, oficina, universidad', season:'Primavera, verano y diario', profile:'Un perfume ideal si quieres oler bien todos los días con algo fresco y muy llevable.', tags:['fresh','daily'], badges:['Diario','Versátil'], sizes:{'3 ml':5000,'5 ml':8000,'10 ml':14000} },
+      { id:'sceptre-malachite', name:'Maison Alhambra Sceptre Malachite EDP', image:'https://www.fragrantica.com/images/perfume/375x500.84592.jpg', desc:'Una fragancia luminosa y sofisticada. Apertura fresca de cítricos y notas verdes. Corazón elegante de flores blancas y jazmín. Fondo suave de almizcle y maderas.', meta:'Inspirado en Bvlgari Le Gemme Tygar', notes:['Apertura fresca de cítricos y notas verdes','Corazón elegante de flores blancas y jazmín','Fondo suave de almizcle y maderas','Refinado. Brillante. Distintivo.'], identity:'Pensado para quien quiere sofisticación limpia, brillo y una elegancia más refinada.', duration:'Media / alta', projection:'Media', occasion:'Diario premium, reuniones, salidas', season:'Primavera y verano', profile:'Ideal si te gustan los perfumes luminosos, limpios y con sensación más exclusiva.', tags:['fresh','daily'], badges:['Refinado','Limpio'], sizes:{'3 ml':7000,'5 ml':10000,'10 ml':18000} }
+    ];
+
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let currentProduct = null;
+    let activeFilter = 'all';
+    let searchTerm = '';
+
+    const overlay = document.getElementById('overlay');
+    const menuPanel = document.getElementById('menuPanel');
+    const cartPanel = document.getElementById('cartPanel');
+    const homeView = document.getElementById('homeView');
+    const detailView = document.getElementById('detailView');
+    const productGrid = document.getElementById('productGrid');
+    const cartItems = document.getElementById('cartItems');
+    const cartTotal = document.getElementById('cartTotal');
+    const header = document.getElementById('siteHeader');
+    const filterGroup = document.getElementById('filterGroup');
+    const searchInput = document.getElementById('searchInput');
+
+    function formatPrice(value) {
+      return '$' + Number(value).toLocaleString('es-CL');
+    }
+
+    function getFilteredProducts() {
+      return products.filter((product) => {
+        const matchesFilter = activeFilter === 'all' || product.tags.includes(activeFilter);
+        const haystack = `${product.name} ${product.desc} ${product.meta} ${product.tags.join(' ')}`.toLowerCase();
+        const matchesSearch = haystack.includes(searchTerm.toLowerCase());
+        return matchesFilter && matchesSearch;
+      });
+    }
+
+    function renderProducts() {
+      const filteredProducts = getFilteredProducts();
+      if (!filteredProducts.length) {
+        productGrid.innerHTML = `
+          <article class="benefit-card" style="grid-column:1/-1;min-height:220px;">
+            <span>Sin resultados</span>
+            <div>
+              <h4>No encontramos perfumes con ese filtro.</h4>
+              <p>Prueba otra categoría o limpia la búsqueda para volver a ver todo el catálogo.</p>
+            </div>
+          </article>
+        `;
+        return;
+      }
+
+      productGrid.innerHTML = filteredProducts.map((product) => `
+        <article class="product-card" onclick="openProduct('${product.id}')">
+          <div class="product-media">
+            <div class="product-badges">
+              ${product.badges.map((badge) => `<span class="badge">${badge}</span>`).join('')}
+            </div>
+            <img src="${product.image}" alt="${product.name}">
+          </div>
+          <h3 class="product-name">${product.name}</h3>
+          <p class="product-desc">${product.desc}</p>
+          <div class="product-extra">
+            <span>${product.occasion}</span>
+            <span>${product.season}</span>
+          </div>
+          <div class="product-price">Desde ${formatPrice(Object.values(product.sizes)[0])}</div>
+        </article>
+      `).join('');
+    }
+
+    function setFilter(filter) {
+      activeFilter = filter;
+      [...filterGroup.querySelectorAll('.filter-btn')].forEach((button) => {
+        button.classList.toggle('active', button.dataset.filter === filter);
+      });
+      renderProducts();
+    }
+
+    function handleSearch(value) {
+      searchTerm = value.trim();
+      renderProducts();
+    }
+
+    function resetCatalogTools() {
+      activeFilter = 'all';
+      searchTerm = '';
+      if (searchInput) searchInput.value = '';
+      [...filterGroup.querySelectorAll('.filter-btn')].forEach((button) => {
+        button.classList.toggle('active', button.dataset.filter === 'all');
+      });
+      renderProducts();
+    }
+
+    function toggleMenu(force) {
+      const isActive = typeof force === 'boolean' ? force : !menuPanel.classList.contains('active');
+      menuPanel.classList.toggle('active', isActive);
+      overlay.classList.toggle('active', isActive || cartPanel.classList.contains('active'));
+    }
+
+    function toggleCart(force) {
+      const isActive = typeof force === 'boolean' ? force : !cartPanel.classList.contains('active');
+      cartPanel.classList.toggle('active', isActive);
+      overlay.classList.toggle('active', isActive || menuPanel.classList.contains('active'));
+    }
+
+    function closePanels() {
+      menuPanel.classList.remove('active');
+      cartPanel.classList.remove('active');
+      overlay.classList.remove('active');
+    }
+
+    function showCatalog() {
+      closePanels();
+      detailView.classList.remove('active');
+      homeView.classList.remove('hidden');
+
+      const sections = homeView.querySelectorAll('.hero, .section');
+      sections.forEach((section) => {
+        if (section.id !== 'catalogo') {
+          section.classList.add('hidden');
+        }
+      });
+
+      const catalog = document.getElementById('catalogo');
+      catalog.classList.remove('hidden');
+      history.replaceState({}, '', window.location.pathname + '#catalogo');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goHome() {
+      closePanels();
+      detailView.classList.remove('active');
+      homeView.classList.remove('hidden');
+      const sections = homeView.querySelectorAll('.hero, .section');
+      sections.forEach((section) => section.classList.remove('hidden'));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      history.replaceState({}, '', window.location.pathname);
+    }
+
+    function goHomeFromDetail() {
+      detailView.classList.remove('active');
+      homeView.classList.remove('hidden');
+      showCatalog();
+    }
+
+    function goHomeAndScroll(id) {
+      if (id === 'catalogo') {
+        showCatalog();
+        return;
+      }
+      closePanels();
+      detailView.classList.remove('active');
+      homeView.classList.remove('hidden');
+      const sections = homeView.querySelectorAll('.hero, .section');
+      sections.forEach((section) => section.classList.remove('hidden'));
+      setTimeout(() => {
+        const target = document.getElementById(id);
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      }, 30);
+    }
+
+    function toggleMlGuide() {
+      const guide = document.getElementById('mlGuideContent');
+      guide.classList.toggle('hidden');
+    }
+
+    function openProduct(productId) {
+      const product = products.find((p) => p.id === productId);
+      if (!product) return;
+
+      currentProduct = product;
+      homeView.classList.add('hidden');
+      detailView.classList.add('active');
+      closePanels();
+
+      document.getElementById('detailImage').src = product.image;
+      document.getElementById('detailImage').alt = product.name;
+      document.getElementById('detailName').textContent = product.name;
+      document.getElementById('detailMeta').textContent = product.meta;
+      document.getElementById('detailDescription').textContent = product.desc;
+      document.getElementById('detailQty').value = 1;
+      document.getElementById('detailNotes').innerHTML = product.notes.map((note) => `<div>— ${note}</div>`).join('');
+      document.getElementById('detailIdentity').innerHTML = `<div>— ${product.identity}</div>`;
+      document.getElementById('detailDuration').textContent = product.duration;
+      document.getElementById('detailProjection').textContent = product.projection;
+      document.getElementById('detailOccasion').textContent = product.occasion;
+      document.getElementById('detailSeason').textContent = product.season;
+      document.getElementById('detailProfile').innerHTML = `<div>— ${product.profile}</div>`;
+      document.getElementById('detailStockNote').textContent = 'Disponible en 3 ml, 5 ml y 10 ml';
+      document.getElementById('detailBadges').innerHTML = product.badges.map((badge) => `<span class="badge">${badge}</span>`).join('');
+
+      const sizeSelect = document.getElementById('detailSize');
+      sizeSelect.innerHTML = Object.entries(product.sizes)
+        .map(([size, price]) => `<option value="${price}" data-size="${size}">${size} · ${formatPrice(price)}</option>`)
+        .join('');
+
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      history.replaceState({}, '', '#' + product.id);
+    }
+
+    function getDetailSelection() {
+      const sizeSelect = document.getElementById('detailSize');
+      const option = sizeSelect.options[sizeSelect.selectedIndex];
+      const qty = Math.max(1, parseInt(document.getElementById('detailQty').value || '1', 10));
+      return { size: option.dataset.size, price: parseInt(option.value, 10), qty };
+    }
+
+    function addCurrentDetailToCart() {
+      if (!currentProduct) return;
+      const { size, price, qty } = getDetailSelection();
+      cart.push({ name: currentProduct.name, text: size, price, qty });
+      persistCart();
+      renderCart();
+      toggleCart(true);
+    }
+
+    async function buyCurrentDetailNow() {
+      if (!currentProduct) return;
+      const { size, price, qty } = getDetailSelection();
+      const items = [{ title: currentProduct.name, quantity: qty, unit_price: price, description: size }];
+      await startMercadoPagoCheckout(items);
+    }
+
+    function persistCart() {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      persistCart();
+      renderCart();
+    }
+
+    function clearCart() {
+      cart = [];
+      persistCart();
+      renderCart();
+    }
+
+    function renderCart() {
+      if (!cart.length) {
+        cartItems.innerHTML = '<div class="cart-empty">Tu carrito está vacío. Explora el catálogo y agrega tus perfumes favoritos.</div>';
+        cartTotal.textContent = formatPrice(0);
+        return;
+      }
+
+      cartItems.innerHTML = cart.map((item, index) => `
+        <article class="cart-item">
+          <div>
+            <strong>${item.name}</strong>
+            <div class="cart-meta">${item.text} · Cantidad ${item.qty}</div>
+            <div class="cart-meta">${formatPrice(item.price * item.qty)}</div>
+          </div>
+          <button class="cart-remove" onclick="removeFromCart(${index})">Eliminar</button>
+        </article>
+      `).join('');
+
+      const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+      cartTotal.textContent = formatPrice(total);
+    }
+
+    async function openCheckout() {
+      if (!cart.length) {
+        alert('Tu carrito está vacío.');
+        return;
+      }
+      const items = cart.map((item) => ({ title: item.name, quantity: item.qty, unit_price: item.price, description: item.text }));
+      await startMercadoPagoCheckout(items);
+    }
+
+    async function startMercadoPagoCheckout(items) {
+      try {
+        if (!MP_PUBLIC_KEY || MP_PUBLIC_KEY === 'TU_PUBLIC_KEY_DE_MERCADO_PAGO') {
+          alert('Debes configurar tu Public Key de Mercado Pago en el código.');
+          return;
+        }
+
+        const response = await fetch('/create_preference', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items })
+        });
+
+        if (!response.ok) throw new Error('No se pudo crear la preferencia de pago.');
+
+        const data = await response.json();
+        const mp = new MercadoPago(MP_PUBLIC_KEY, { locale: 'es-CL' });
+        mp.checkout({ preference: { id: data.preferenceId }, autoOpen: true });
+      } catch (error) {
+        alert('Error al iniciar el pago: ' + error.message);
+      }
+    }
+
+    window.addEventListener('scroll', () => {
+      header.classList.toggle('scrolled', window.scrollY > 10);
+    });
+
+    window.addEventListener('storage', () => {
+      cart = JSON.parse(localStorage.getItem('cart')) || [];
+      renderCart();
+    });
+
+    (function runSelfChecks() {
+      console.assert(typeof formatPrice === 'function', 'formatPrice debe existir');
+      console.assert(formatPrice(1000) === '$1.000', 'formatPrice debe formatear CLP');
+      console.assert(Array.isArray(products), 'products debe ser un arreglo');
+      console.assert(products.length === 15, 'Debe haber 15 productos en el catálogo');
+      console.assert(products.every((product) => product && typeof product.id === 'string'), 'Cada producto debe tener id');
+      console.assert(products.every((product) => product && product.sizes && Object.keys(product.sizes).length === 3), 'Cada producto debe tener 3 tamaños');
+      console.assert(products.every((product) => Array.isArray(product.tags)), 'Cada producto debe tener tags');
+      console.assert(getFilteredProducts().length === products.length, 'El filtro all debe devolver todos los productos');
+      console.assert(typeof openCheckout === 'function', 'openCheckout debe existir');
+      console.assert(typeof showCatalog === 'function', 'showCatalog debe existir');
+      console.assert(typeof toggleMlGuide === 'function', 'toggleMlGuide debe existir');
+      console.assert(typeof openProduct === 'function', 'openProduct debe existir');
+      console.assert(document.getElementById('catalogo').classList.contains('hidden') === true, 'El catálogo debe iniciar oculto');
+    })();
+
+    renderProducts();
+    renderCart();
+  </script>
+</body>
+</html>
